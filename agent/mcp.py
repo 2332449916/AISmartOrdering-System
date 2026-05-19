@@ -1,6 +1,4 @@
-"""
-实现LangChain中各个工具的定义（定义三个工具、工具一：实现常规问题的对话回答 工具二：实现菜品查询问题对话 工具三：实现距离范围配送问题对话）
-"""
+
 import logging
 import os
 from langchain_core.tools import tool, ToolException
