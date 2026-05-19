@@ -1,11 +1,4 @@
-"""
-高德地图工具模块
 
-该模块提供高德地图的API调用功能，
-用于获取地图上的地点信息、路线规划等
-
-中间件开发（技术路线）
-"""
 import logging
 from http.client import responses
 from json import JSONDecodeError
