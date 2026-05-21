@@ -1,5 +1,4 @@
 
-
 from  smart_diancan.tools.amap_tool import  PathInputModel
 
 def  get_menu():
