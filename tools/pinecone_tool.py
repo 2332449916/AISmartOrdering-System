@@ -1,24 +1,46 @@
+"""
+Pinecone向量数据库工具模块
+
+该模块提供Pinecone向量数据库的连接和操作功能，
+用于存储和查询菜品信息的向量化数据，支持语义搜索
+"""
 
 import  os
 import dashscope
-from  dotenv import load_dotenv
-from  typing import List,Dict,Any
+from dotenv import load_dotenv
+from typing import List,Dict,Any
 from pinecone import Pinecone
 from pinecone import ServerlessSpec
 from http import HTTPStatus
 
-load_dotenv()
+# 加载项目根目录下的 .env
+_env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+if os.path.exists(_env_path):
+    load_dotenv(_env_path, override=True)
 
 import  logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+#
+# import os
+# import dashscope
+# from dotenv import load_dotenv
+# from typing import List,Dict,Any
+# from pinecone import Pinecone
+#
+# load_dotenv()
+#
+# import logging
+# logging.basicConfig(level=logging.INFO)
+# logger=logging.getLogger(__name__)
+
 
 class   PineconeVectorDB:
     """PineCone向量数据库的操作"""
 
     def  __init__(self):
-        self.pinecone_api_key=os.getenv("PINECONE_API_KEY","pcsk_438teh_QavQpvLarFGgtS1E9MPDqEq4dmzkzs8dj7xxU5rVGMkb5gj8v8eWAeZ3fwAzcY5")
-        self.dashscope_api_key=os.getenv("DASHSCOPE_API_KEY","sk-26d57c968c364e7bb14f1fc350d4bff0")
+        self.pinecone_api_key=os.getenv("PINECONE_API_KEY","pcsk_3JJXbY_96sgrf2Ye97WUdPnX5CYQgrR6oFos8N2qtX42Vkhv4BJBoGi8jdpjdZskTScjkU")
+        self.dashscope_api_key=os.getenv("DASHSCOPE_API_KEY","sk-fef73998568947dcbb398c5aa9074b6d")
         self.pinecone_env=os.getenv("PINECONE_ENV","us-east-1")
 
         # 配置索引名字、嵌入模型名字、嵌入模型的维度
@@ -30,6 +52,19 @@ class   PineconeVectorDB:
         self.pc=None
         self.index=None
 
+    # def __init__(self):
+    #     self.pinecone_api_key = os.getenv("PINECONE_API_KEY","pcsk_3JJXbY_96sgrf2Ye97WUdPnX5CYQgrR6oFos8N2qtX42Vkhv4BJBoGi8jdpjdZskTScjkU")
+    #     self.dashscope_api_key = os.getenv("DASHSCOPE_API_KEY","sk-fef73998568947dcbb398c5aa9074b6d")
+    #     self.pinecone_env=os.getenv("PINECONE_ENV","us-east-1")
+    #
+    # #     配置索引名字、嵌入模型名字、嵌入模型的维度
+    #     self.index_name ="menu-item-index"
+    #     self.embedding_model="text-embedding-v4"
+    #     self.dimension=1536
+    #
+    #     # 配置pinecone客户端对象以及索引对象
+    #     self.pc=None
+    #     self.index =None
 
     def  initialize_connection(self)->bool:
         """初始化PineCone向量数据库的客户端对象以及索引对象"""
@@ -60,8 +95,33 @@ class   PineconeVectorDB:
         except Exception as e:
             logger.error(f"初始化向量数据库PineCone客户端以及索引对象失败:{e}")
             return  False
-
-
+    # def initialize_connection(self)->bool:
+    #     """初始化Pinecone向量数据库的客户端对象以及索引对象"""
+    #     try:
+    #         #1. 判断pinecone_api_key
+    #         if not self.pinecone_api_key:
+    #             logger.error("pinecone api_key  not found!")
+    #             return False
+    #
+    #         #   2.初始化客户对象
+    #         self.pc = Pinecone(api_key=self.pinecone_api_key)
+    #         #   3.初始化索引对象
+    #         if not self.pc.has_index(self.index_name):
+    #             self.pc.create_index(
+    #                 name = self.index_name,
+    #                 vector_type = "dense",
+    #                 dimension = self.dimension,
+    #                 metric = "cosine",
+    #                 spec = ServerlessSpec(cloud="aws",
+    #                                       region=self.pinecone_env)
+    #             )
+    #         #     4.获取赋值
+    #         self.index=self.pc.Index(self.index_name)
+    #         logger.info("初始化向量数据库Pinecone客户端以及索引对象成功")
+    #         return True
+    #     except Exception as e:
+    #         logger.error(f"初始化向量数据库Pinecone客户端以及索引对象失败:{e}")
+    #         return False
 
     def  clear_index_vectors(self)->bool:
         """清空指定索引下的向量数据【不是删除索引，索引结构保留，向量数据删除】"""
@@ -349,7 +409,7 @@ def search_menu_items_with_ids(query: str, top_k: int = 2) -> Dict[str,Any]:
     match_result=pinecone_db.search_similar_menu_item(query=query, top_k=top_k)
 
     if not match_result:
-        return []
+        return {"contents": [], "ids": [], "scores": []}
 
     ids=[]
     for item  in  match_result:

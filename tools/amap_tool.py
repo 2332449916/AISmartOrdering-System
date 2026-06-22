@@ -1,4 +1,11 @@
+"""
+高德地图工具模块
 
+该模块提供高德地图的API调用功能，
+用于获取地图上的地点信息、路线规划等
+
+中间件开发（技术路线）
+"""
 import logging
 from http.client import responses
 from json import JSONDecodeError
@@ -11,8 +18,10 @@ import json
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
+# 加载项目根目录下的 .env
+_env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+if os.path.exists(_env_path):
+    load_dotenv(_env_path, override=True)
 # Python对数据处理有两种方式的验证
 # 1.静态检查：（程序员以及编译器） 并且不会在运行的时候做约束：类型约束  typing
 # 2.动态约束：（在程序运行的时候对数据做校验）运行时产生的：动态约束：pydantic库
