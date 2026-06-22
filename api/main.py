@@ -1,15 +1,29 @@
-
+"""
+智能点餐助手主程序 FastAPI 接口
+1.定义FastAPI应用实例
+2.提供三个主要接口：
+2.1 POST /chat - 智能对话接口
+2.2 POST /delivery - 配送查询接口
+2.3 GET /menu/list - 菜品列表接口
+"""
 from http.client import HTTPException
-
+from fastapi import HTTPException
 from  fastapi import  FastAPI
 from pydantic import BaseModel
 from typing import List,Optional
 from smart_diancan.tools.amap_tool import PathInputModel
 import  logging
+import json
+import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 app=FastAPI(title="智能点餐助手的API接口",description="智能点餐应用主要暴露三个接口分别为智能对话接口、配送查询接口、菜品列表接口")
 
+def _debug_log(hypothesis_id: str, location: str, message: str, data: dict):
+    # #region agent log
+    with open("debug-57f2eb.log", "a", encoding="utf-8") as f:
+        f.write(json.dumps({"sessionId":"57f2eb","runId":"frontend-connectivity","hypothesisId":hypothesis_id,"location":location,"message":message,"data":data,"timestamp":int(time.time()*1000)}, ensure_ascii=False) + "\n")
+    # #endregion
 
 
 @app.get("/")
@@ -79,10 +93,12 @@ async def chat_endpoint(request: ChatRequest):
     接收用户问题，返回智能助手回复
     """
     try:
+        _debug_log("H5", "api/main.py:chat_endpoint", "chat endpoint entered", {"query_len": len(request.query or "")})
         from  smart_diancan.service.diancan_service import smart_chat
 
         # 调用智能对话服务
         result = smart_chat(request.query)
+        _debug_log("H5", "api/main.py:chat_endpoint", "chat service returned", {"result_type": type(result).__name__})
 
         # 处理不同类型的返回值
         if isinstance(result, dict) and "recommendation" in result and "menu_ids" in result:
@@ -102,6 +118,7 @@ async def chat_endpoint(request: ChatRequest):
             )
 
     except Exception as e:
+        _debug_log("H5", "api/main.py:chat_endpoint-except", "chat endpoint exception", {"error": str(e)})
         raise HTTPException(
             status_code=500,
             detail=f"智能对话服务失败: {str(e)}"
@@ -117,6 +134,7 @@ async def menu_list_endpoint():
 
     # 2.调用方法
     menu_items=get_menu()
+    _debug_log("H2", "api/main.py:menu_list_endpoint", "menu list queried", {"count": len(menu_items) if menu_items else 0})
 
 
     # 3.封装结果返回
@@ -146,10 +164,12 @@ async def delivery_endpoint(request: DeliveryRequest):
 
     # 1.导入service
     try:
+        _debug_log("H4", "api/main.py:delivery_endpoint", "delivery endpoint entered", {"address_len": len(request.address or ""), "travel_mode": request.travel_mode})
         from  smart_diancan.service.diancan_service import  check_delivery_range
 
         # 2.调用
         check_delivery_range_response=check_delivery_range(request.address, request.travel_mode)
+        _debug_log("H4", "api/main.py:delivery_endpoint", "delivery service returned", {"status": check_delivery_range_response.get("status")})
 
         if  check_delivery_range_response['status']=="fail":
 
@@ -157,6 +177,7 @@ async def delivery_endpoint(request: DeliveryRequest):
 
                 success=False,
                 in_range=False,
+
                 distance=0.0,
                 formatted_address=request.address,
                 duration=0.0,
@@ -177,6 +198,7 @@ async def delivery_endpoint(request: DeliveryRequest):
             input_address=request.address
         )
     except Exception as e:
+        _debug_log("H4", "api/main.py:delivery_endpoint-except", "delivery endpoint exception", {"error": str(e)})
         logger.error(f"配送范围查询失败；{e}")
         return DeliveryResponse(
             success=False,
