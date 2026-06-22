@@ -1,4 +1,13 @@
+"""
+智能点餐助手主程序
+LangChain中Agent组件的作用:根据自然语言选择工具，调用工具。
+该程序构建了一个包含工具选择功能的LLM系统(相当于LangChain中的Agent角色)，能够：
+1. 自动选择合适的工具（常规咨询、菜品推荐、配送范围检查）
+2. 调用相应工具并返回结果
+3. 提供自然、友好的对话体验
+手动实现Agent的机制（找工具 调用工具）
 
+"""
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -238,7 +247,9 @@ if __name__ == '__main__':
     pass
 
     # 1.常规问题的对话
-   # chat_with_assistant(user_query="你们餐厅的联系方式是多少?")
+
+
+    chat_with_assistant(user_query="你们餐厅的联系方式是多少?")
 
     # 2.菜品推荐问题的对话
     # chat_with_assistant(user_query="推荐鲁菜系列的菜品?")
